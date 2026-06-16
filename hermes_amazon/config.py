@@ -16,6 +16,8 @@ class RuntimeSettings:
     base_url: str = DEFAULT_PRIVATE_BASE_URL
     default_model: str = "auto"
     manifest_api_key_present: bool = False
+    changedetection_base_url: str | None = None
+    changedetection_api_key_present: bool = False
 
     def validate(self) -> list[str]:
         issues: list[str] = []
@@ -25,6 +27,8 @@ class RuntimeSettings:
             issues.append("base_url obrigatoria quando provider_mode e custom")
         if self.provider_mode == "auto" and not self.base_url:
             issues.append("base_url obrigatoria quando provider_mode e auto")
+        if self.changedetection_api_key_present and not self.changedetection_base_url:
+            issues.append("HERMES_CHANGEDETECTION_BASE_URL obrigatoria quando HERMES_CHANGEDETECTION_API_KEY esta presente")
         return issues
 
 
@@ -42,4 +46,13 @@ def load_runtime_settings(env: Mapping[str, str] | None = None) -> RuntimeSettin
         base_url=base_url,
         default_model=data.get("HERMES_MODEL_DEFAULT", "auto").strip() or "auto",
         manifest_api_key_present=bool(data.get("MANIFEST_API_KEY")),
+        changedetection_base_url=_optional_env(data.get("HERMES_CHANGEDETECTION_BASE_URL")),
+        changedetection_api_key_present=bool(data.get("HERMES_CHANGEDETECTION_API_KEY")),
     )
+
+
+def _optional_env(value: str | None) -> str | None:
+    if value is None:
+        return None
+    text = value.strip()
+    return text or None

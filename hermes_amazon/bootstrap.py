@@ -25,5 +25,7 @@ def build_boot_report(settings: RuntimeSettings, env: Mapping[str, str] | None =
             "credentials": credentials.mode.value,
             "messaging": "local-memory",
             "processing": "rule-based",
+            "monitoring": "local-watch",
+            "changedetection": "configured" if settings.changedetection_api_key_present else "not-configured",
         },
     )

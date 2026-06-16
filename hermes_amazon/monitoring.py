@@ -71,6 +71,40 @@ class WatchEvent:
         }
 
 
+@dataclass(frozen=True)
+class ChangeDetectionConfig:
+    base_url: str
+    api_key_present: bool = False
+
+    def validate(self) -> list[str]:
+        issues: list[str] = []
+        if not self.base_url.strip():
+            issues.append("changedetection base_url e obrigatoria")
+        if self.base_url and not self.base_url.startswith(("http://", "https://")):
+            issues.append("changedetection base_url precisa comecar com http:// ou https://")
+        if not self.api_key_present:
+            issues.append("HERMES_CHANGEDETECTION_API_KEY ausente")
+        return issues
+
+
+@dataclass(frozen=True)
+class ChangeDetectionWatchPayload:
+    url: str
+    title: str
+    tag: str
+    css_filter: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "url": self.url,
+            "title": self.title,
+            "tag": self.tag,
+        }
+        if self.css_filter:
+            payload["css_filter"] = self.css_filter
+        return payload
+
+
 def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
@@ -114,6 +148,21 @@ def create_watch_target(product: Product, selector: str | None = None, status: s
     if issues:
         raise ValueError("; ".join(issues))
     return target
+
+
+def build_changedetection_payload(product: Product, target: WatchTarget) -> ChangeDetectionWatchPayload:
+    if product.id != target.product_id:
+        raise ValueError("produto e watch target nao pertencem ao mesmo registro")
+    title = f"Hermes Amazon - {product.name}"
+    tag_parts = ["hermes-amazon", product.category]
+    if product.niche:
+        tag_parts.append(product.niche)
+    return ChangeDetectionWatchPayload(
+        url=target.url,
+        title=title,
+        tag=",".join(part.strip().replace(" ", "-").lower() for part in tag_parts if part.strip()),
+        css_filter=target.selector,
+    )
 
 
 class WatchRepository:

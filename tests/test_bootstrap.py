@@ -10,6 +10,7 @@ class BootstrapTests(unittest.TestCase):
         self.assertTrue(report.healthy)
         self.assertEqual(report.module_statuses["credentials"], "mock")
         self.assertEqual(report.module_statuses["messaging"], "local-memory")
+        self.assertEqual(report.module_statuses["changedetection"], "not-configured")
 
     def test_boot_report_reports_missing_env_credentials(self) -> None:
         report = build_boot_report(

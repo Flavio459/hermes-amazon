@@ -22,6 +22,23 @@ class ConfigTests(unittest.TestCase):
         settings = load_runtime_settings({"MANIFEST_API_KEY": "mnfst_example"})
         self.assertTrue(settings.manifest_api_key_present)
 
+    def test_changedetection_config_presence_is_detected_without_exposing_key(self) -> None:
+        settings = load_runtime_settings(
+            {
+                "HERMES_CHANGEDETECTION_BASE_URL": "https://changedetection.example",
+                "HERMES_CHANGEDETECTION_API_KEY": "secret",
+            }
+        )
+        self.assertEqual(settings.changedetection_base_url, "https://changedetection.example")
+        self.assertTrue(settings.changedetection_api_key_present)
+
+    def test_changedetection_key_requires_base_url(self) -> None:
+        settings = load_runtime_settings({"HERMES_CHANGEDETECTION_API_KEY": "secret"})
+        self.assertIn(
+            "HERMES_CHANGEDETECTION_BASE_URL obrigatoria quando HERMES_CHANGEDETECTION_API_KEY esta presente",
+            settings.validate(),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

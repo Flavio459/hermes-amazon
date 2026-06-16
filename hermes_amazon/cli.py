@@ -12,8 +12,10 @@ from .contracts import EventKind, HermesEvent
 from .messaging import LocalMessagingAdapter
 from .monitoring import (
     ALLOWED_WATCH_EVENT_TYPES,
+    ChangeDetectionConfig,
     DEFAULT_WATCH_STORE,
     WatchRepository,
+    build_changedetection_payload,
     simulate_watch_event,
 )
 from .processing import LocalProcessingEngine
@@ -78,6 +80,10 @@ def build_parser() -> argparse.ArgumentParser:
     simulate_parser.add_argument("--old-value", default=None)
     simulate_parser.add_argument("--new-value", default=None)
     simulate_parser.add_argument("--severity", default="info")
+
+    export_parser = watch_subparsers.add_parser("export-changedetection", help="Build changedetection.io watch payload")
+    export_parser.add_argument("target_id")
+    export_parser.add_argument("--require-config", action="store_true")
     return parser
 
 
@@ -96,6 +102,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "base_url": settings.base_url,
                     "default_model": settings.default_model,
                     "manifest_api_key_present": settings.manifest_api_key_present,
+                    "changedetection_base_url": settings.changedetection_base_url,
+                    "changedetection_api_key_present": settings.changedetection_api_key_present,
                     "route_profile": report.route_profile,
                     "module_statuses": dict(report.module_statuses),
                 }
@@ -197,6 +205,31 @@ def main(argv: Sequence[str] | None = None) -> int:
                 severity=args.severity,
             )
             print(pformat(event.to_dict()))
+            return 0
+
+        if args.watch_command == "export-changedetection":
+            target = repository.get(args.target_id)
+            products = ProductRepository(Path(args.product_store))
+            product = products.get(target.product_id)
+            payload = build_changedetection_payload(product, target)
+            config = ChangeDetectionConfig(
+                base_url=settings.changedetection_base_url or "",
+                api_key_present=settings.changedetection_api_key_present,
+            )
+            issues = config.validate()
+            if args.require_config and issues:
+                for issue in issues:
+                    print(issue)
+                return 1
+            print(
+                pformat(
+                    {
+                        "base_url": settings.changedetection_base_url,
+                        "api_key_present": settings.changedetection_api_key_present,
+                        "payload": payload.to_dict(),
+                    }
+                )
+            )
             return 0
 
     return 2

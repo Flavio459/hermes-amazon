@@ -3,7 +3,9 @@ import unittest
 from pathlib import Path
 
 from hermes_amazon.monitoring import (
+    ChangeDetectionConfig,
     WatchRepository,
+    build_changedetection_payload,
     create_watch_target,
     simulate_watch_event,
 )
@@ -81,6 +83,38 @@ class MonitoringTests(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             simulate_watch_event(create_watch_target(product), "unknown")
+
+    def test_changedetection_payload_uses_product_and_target(self) -> None:
+        product = create_product(
+            name="Cadeira Premium",
+            category="Home Office",
+            affiliate_url="https://amazon.example/cadeira-premium",
+            niche="Setup Trabalho",
+        )
+        target = create_watch_target(product, selector=".price")
+        payload = build_changedetection_payload(product, target)
+        self.assertEqual(payload.url, product.affiliate_url)
+        self.assertEqual(payload.css_filter, ".price")
+        self.assertEqual(payload.title, "Hermes Amazon - Cadeira Premium")
+        self.assertEqual(payload.tag, "hermes-amazon,home-office,setup-trabalho")
+
+    def test_changedetection_payload_rejects_mismatched_product(self) -> None:
+        product = create_product(
+            name="Produto A",
+            category="teste",
+            affiliate_url="https://amazon.example/a",
+        )
+        other = create_product(
+            name="Produto B",
+            category="teste",
+            affiliate_url="https://amazon.example/b",
+        )
+        with self.assertRaises(ValueError):
+            build_changedetection_payload(product, create_watch_target(other))
+
+    def test_changedetection_config_requires_key(self) -> None:
+        config = ChangeDetectionConfig(base_url="https://changedetection.example", api_key_present=False)
+        self.assertIn("HERMES_CHANGEDETECTION_API_KEY ausente", config.validate())
 
 
 if __name__ == "__main__":
