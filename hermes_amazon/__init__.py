@@ -22,6 +22,7 @@ from .messaging import (
 )
 from .processing import LocalProcessingEngine, ProcessingOutcome, decide_route, validate_processing_event
 from .plan import route_profile
+from .products import Product, ProductRepository, build_product_id, create_product, validate_product
 
 __all__ = [
     "CredentialAdapter",
@@ -38,8 +39,12 @@ __all__ = [
     "PublishReceipt",
     "LocalProcessingEngine",
     "ProcessingOutcome",
+    "Product",
+    "ProductRepository",
     "RuntimeSettings",
+    "build_product_id",
     "build_boot_report",
+    "create_product",
     "load_runtime_settings",
     "decide_route",
     "resolve_credential_adapter",
@@ -47,5 +52,6 @@ __all__ = [
     "route_profile",
     "validate_credential_settings",
     "validate_messaging_settings",
+    "validate_product",
     "validate_processing_event",
 ]

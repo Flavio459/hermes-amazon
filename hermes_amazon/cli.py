@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import argparse
 from pprint import pformat
+from pathlib import Path
 from typing import Sequence
 
 from .bootstrap import build_boot_report
@@ -10,6 +11,7 @@ from .config import load_runtime_settings
 from .contracts import EventKind, HermesEvent
 from .messaging import LocalMessagingAdapter
 from .processing import LocalProcessingEngine
+from .products import ALLOWED_PRODUCT_STATUSES, DEFAULT_PRODUCT_STORE, ProductRepository, create_product
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -26,6 +28,29 @@ def build_parser() -> argparse.ArgumentParser:
     process_parser.add_argument("--correlation-id", default=None)
     process_parser.add_argument("--emit", action="store_true", help="Emit a local message summary")
     process_parser.add_argument("--channel", default="hermes.local.processing")
+
+    product_parser = subparsers.add_parser("product", help="Manage local product catalog")
+    product_parser.add_argument("--store", default=str(DEFAULT_PRODUCT_STORE), help="Product store JSON path")
+    product_subparsers = product_parser.add_subparsers(dest="product_command", required=True)
+
+    add_parser = product_subparsers.add_parser("add", help="Add a product")
+    add_parser.add_argument("--name", required=True)
+    add_parser.add_argument("--category", required=True)
+    add_parser.add_argument("--link", required=True)
+    add_parser.add_argument("--price", default=None)
+    add_parser.add_argument("--niche", default=None)
+    add_parser.add_argument("--status", default="draft", choices=sorted(ALLOWED_PRODUCT_STATUSES))
+    add_parser.add_argument("--notes", default=None)
+
+    product_subparsers.add_parser("list", help="List products")
+
+    inspect_parser = product_subparsers.add_parser("inspect", help="Inspect a product")
+    inspect_parser.add_argument("product_id")
+
+    mark_parser = product_subparsers.add_parser("mark", help="Update product status")
+    mark_parser.add_argument("product_id")
+    mark_parser.add_argument("--status", required=True, choices=sorted(ALLOWED_PRODUCT_STATUSES))
+    mark_parser.add_argument("--notes", default=None)
     return parser
 
 
@@ -90,6 +115,35 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
         return 0
+
+    if args.command == "product":
+        repository = ProductRepository(Path(args.store))
+        if args.product_command == "add":
+            product = create_product(
+                name=args.name,
+                category=args.category,
+                affiliate_url=args.link,
+                price=args.price,
+                niche=args.niche,
+                status=args.status,
+                notes=args.notes,
+            )
+            repository.add(product)
+            print(pformat(product.to_dict()))
+            return 0
+
+        if args.product_command == "list":
+            print(pformat([product.to_dict() for product in repository.list()]))
+            return 0
+
+        if args.product_command == "inspect":
+            print(pformat(repository.get(args.product_id).to_dict()))
+            return 0
+
+        if args.product_command == "mark":
+            product = repository.mark(args.product_id, args.status, notes=args.notes)
+            print(pformat(product.to_dict()))
+            return 0
 
     return 2
 
