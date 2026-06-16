@@ -10,6 +10,12 @@ from .bootstrap import build_boot_report
 from .config import load_runtime_settings
 from .contracts import EventKind, HermesEvent
 from .messaging import LocalMessagingAdapter
+from .monitoring import (
+    ALLOWED_WATCH_EVENT_TYPES,
+    DEFAULT_WATCH_STORE,
+    WatchRepository,
+    simulate_watch_event,
+)
 from .processing import LocalProcessingEngine
 from .products import ALLOWED_PRODUCT_STATUSES, DEFAULT_PRODUCT_STORE, ProductRepository, create_product
 
@@ -51,6 +57,27 @@ def build_parser() -> argparse.ArgumentParser:
     mark_parser.add_argument("product_id")
     mark_parser.add_argument("--status", required=True, choices=sorted(ALLOWED_PRODUCT_STATUSES))
     mark_parser.add_argument("--notes", default=None)
+
+    watch_parser = subparsers.add_parser("watch", help="Manage local product monitoring")
+    watch_parser.add_argument("--store", default=str(DEFAULT_WATCH_STORE), help="Watch store JSON path")
+    watch_parser.add_argument("--product-store", default=str(DEFAULT_PRODUCT_STORE), help="Product store JSON path")
+    watch_subparsers = watch_parser.add_subparsers(dest="watch_command", required=True)
+
+    watch_add_parser = watch_subparsers.add_parser("add", help="Add a watch target from a product")
+    watch_add_parser.add_argument("product_id")
+    watch_add_parser.add_argument("--selector", default=None)
+
+    watch_subparsers.add_parser("list", help="List watch targets")
+
+    watch_inspect_parser = watch_subparsers.add_parser("inspect", help="Inspect a watch target")
+    watch_inspect_parser.add_argument("target_id")
+
+    simulate_parser = watch_subparsers.add_parser("simulate", help="Simulate a local watch event")
+    simulate_parser.add_argument("target_id")
+    simulate_parser.add_argument("--event-type", required=True, choices=sorted(ALLOWED_WATCH_EVENT_TYPES))
+    simulate_parser.add_argument("--old-value", default=None)
+    simulate_parser.add_argument("--new-value", default=None)
+    simulate_parser.add_argument("--severity", default="info")
     return parser
 
 
@@ -143,6 +170,33 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.product_command == "mark":
             product = repository.mark(args.product_id, args.status, notes=args.notes)
             print(pformat(product.to_dict()))
+            return 0
+
+    if args.command == "watch":
+        repository = WatchRepository(Path(args.store))
+        if args.watch_command == "add":
+            products = ProductRepository(Path(args.product_store))
+            target = repository.add_from_product(args.product_id, products, selector=args.selector)
+            print(pformat(target.to_dict()))
+            return 0
+
+        if args.watch_command == "list":
+            print(pformat([target.to_dict() for target in repository.list()]))
+            return 0
+
+        if args.watch_command == "inspect":
+            print(pformat(repository.get(args.target_id).to_dict()))
+            return 0
+
+        if args.watch_command == "simulate":
+            event = simulate_watch_event(
+                repository.get(args.target_id),
+                event_type=args.event_type,
+                old_value=args.old_value,
+                new_value=args.new_value,
+                severity=args.severity,
+            )
+            print(pformat(event.to_dict()))
             return 0
 
     return 2

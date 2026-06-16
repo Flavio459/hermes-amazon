@@ -20,6 +20,15 @@ from .messaging import (
     PublishReceipt,
     validate_messaging_settings,
 )
+from .monitoring import (
+    WatchEvent,
+    WatchRepository,
+    WatchTarget,
+    build_watch_id,
+    create_watch_target,
+    simulate_watch_event,
+    validate_watch_target,
+)
 from .processing import LocalProcessingEngine, ProcessingOutcome, decide_route, validate_processing_event
 from .plan import route_profile
 from .products import Product, ProductRepository, build_product_id, create_product, validate_product
@@ -42,9 +51,14 @@ __all__ = [
     "Product",
     "ProductRepository",
     "RuntimeSettings",
+    "WatchEvent",
+    "WatchRepository",
+    "WatchTarget",
     "build_product_id",
+    "build_watch_id",
     "build_boot_report",
     "create_product",
+    "create_watch_target",
     "load_runtime_settings",
     "decide_route",
     "resolve_credential_adapter",
@@ -54,4 +68,6 @@ __all__ = [
     "validate_messaging_settings",
     "validate_product",
     "validate_processing_event",
+    "validate_watch_target",
+    "simulate_watch_event",
 ]
