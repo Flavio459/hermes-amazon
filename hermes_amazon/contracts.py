@@ -50,6 +50,7 @@ class BootReport:
     healthy: bool
     route_profile: str
     issues: Sequence[str]
+    module_statuses: Mapping[str, str] = field(default_factory=dict)
 
 
 class CredentialProvider(Protocol):

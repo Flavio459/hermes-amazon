@@ -33,6 +33,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "default_model": settings.default_model,
                     "manifest_api_key_present": settings.manifest_api_key_present,
                     "route_profile": report.route_profile,
+                    "module_statuses": dict(report.module_statuses),
                 }
             )
         )
