@@ -4,16 +4,22 @@ Este repositório contém a estrutura inicial para operacionalizar o agente Herm
 
 ## Conteúdo
 
+- `AGENTS.md`: instrucoes operacionais do repositorio.
+- `SOUL.md`: criterio de trabalho e postura do agente.
+- `USER.md`: contexto do usuario e preferencias de colaboracao.
+- `HEARTBEAT.md`: rotina curta de checagem quando houver heartbeat.
+- `MEMORY.md`: memoria operacional de longo prazo.
 - `MODEL.md`: Modelo de integração Hermes–Amazon, incluindo visão geral, componentes, arquitetura, habilidades e segurança.
 - `VERSION.md`: Especificação de versionamento e guidelines de branch.
 - `README.md`: Este arquivo com orientações iniciais.
 
 ## Como usar
 
-1. Revise `MODEL.md` para entender a arquitetura e os módulos necessários.  
-2. Defina se o Hermes requer perfis ou skills específicos, conforme mencionado no modelo.  
-3. Utilize Obsidian para anotar informações operacionais e pendências.  
-4. Siga as instruções de versionamento em `VERSION.md` ao realizar commits e releases.
+1. Revise `AGENTS.md`, `SOUL.md` e `USER.md` para entender como trabalhar neste repo.
+2. Revise `MODEL.md` para entender a arquitetura e os módulos necessários.
+3. Siga `VERSION.md` ao realizar commits e releases.
+4. Use `HEARTBEAT.md` apenas quando houver checagem periodica.
+5. Registre aprendizados relevantes em `MEMORY.md`.
 
 ## Próximos passos
 
