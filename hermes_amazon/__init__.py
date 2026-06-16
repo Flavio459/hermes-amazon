@@ -20,6 +20,7 @@ from .messaging import (
     PublishReceipt,
     validate_messaging_settings,
 )
+from .processing import LocalProcessingEngine, ProcessingOutcome, decide_route, validate_processing_event
 from .plan import route_profile
 
 __all__ = [
@@ -35,12 +36,16 @@ __all__ = [
     "MockCredentialAdapter",
     "ModuleName",
     "PublishReceipt",
+    "LocalProcessingEngine",
+    "ProcessingOutcome",
     "RuntimeSettings",
     "build_boot_report",
     "load_runtime_settings",
+    "decide_route",
     "resolve_credential_adapter",
     "resolve_credentials",
     "route_profile",
     "validate_credential_settings",
     "validate_messaging_settings",
+    "validate_processing_event",
 ]

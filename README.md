@@ -19,9 +19,10 @@ Este repositório contém a estrutura inicial para operacionalizar o agente Herm
 2. Revise `MODEL.md` para entender a arquitetura e os módulos necessários.
 3. Rode `python -m hermes_amazon inspect` para ver o perfil de runtime.
 4. Rode `python -m hermes_amazon validate` para checar a configuração.
-5. Siga `VERSION.md` ao realizar commits e releases.
-6. Use `HEARTBEAT.md` apenas quando houver checagem periodica.
-7. Registre aprendizados relevantes em `MEMORY.md`.
+5. Rode `python -m hermes_amazon process --kind sqs_message --source demo --payload "{}"` para simular roteamento local.
+6. Siga `VERSION.md` ao realizar commits e releases.
+7. Use `HEARTBEAT.md` apenas quando houver checagem periodica.
+8. Registre aprendizados relevantes em `MEMORY.md`.
 
 ## Próximos passos
 

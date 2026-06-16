@@ -24,5 +24,6 @@ def build_boot_report(settings: RuntimeSettings, env: Mapping[str, str] | None =
         module_statuses={
             "credentials": credentials.mode.value,
             "messaging": "local-memory",
+            "processing": "rule-based",
         },
     )
